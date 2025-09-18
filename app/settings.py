@@ -12,19 +12,14 @@ logger = logging.getLogger("pppd.settings")
 # Settings file path - stored in the extension's persistent storage directory
 SETTINGS_FILE = Path("/app/settings/pppd-settings.json")
 
-# Default settings
+# Default PPP daemon settings
+# enabled:              false
 # device:               /dev/ttyS0
 # baudrate:             921600
 # local_ip_address:     192.168.1.205
 # remote_ip_address:    192.168.1.200
 
 DEFAULT_SETTINGS = {
-    "last_used": {
-        "device": "/dev/ttyS0",
-        "baudrate": "921600",
-        "local_ip_address": "192.168.1.205",
-        "remote_ip_address": "192.168.1.200",
-    },
     "pppd": {
         "enabled": False,
         "device": "/dev/ttyS0",
@@ -81,18 +76,6 @@ def save_settings(settings):
             json.dump(settings, f, indent=2)
     except Exception as e:
         logger.error(f"Error saving settings: {e}")
-
-
-# get the last used PPP daemon settings
-def get_last_used():
-    """
-    Get the last used PPP daemon settings
-
-    Returns:
-        dict: Dictionary with PPP daemon settings
-    """
-    settings = get_settings()
-    return settings.get("last_used", DEFAULT_SETTINGS["last_used"])
 
 
 # get the PPP daemon enabled state
