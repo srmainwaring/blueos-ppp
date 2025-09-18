@@ -1,9 +1,10 @@
 {
-    "name":"QuickStart",
-    "description":"Example Extension",
-    "icon":"mdi-clock",
-    "company":"Blue Robotics",
-    "version":"0.0.1",
-    "webpage":"https://example.com",
+    "name":"PPP Daemon",
+    "description":"BlueOS Extension to run a PPP daemon",
+    "icon":"mdi-arrow",
+    "company":"ArduPilot",
+    "version":"0.0.0",
+    "new_page": false,
+    "webpage": "https://github.com/srmainwaring/blueos-pppd",
     "api":""
 }
