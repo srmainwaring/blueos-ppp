@@ -1,0 +1,13 @@
+[project]
+name = "blueos-pppd-extension"
+version = "0.0.0"
+description = "BlueOS PPP Daemon Extension"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License (GPLv3)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests",
+    "litestar[standard]",
+]
