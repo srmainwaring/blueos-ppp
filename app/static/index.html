@@ -135,6 +135,7 @@
                         <!-- Action buttons -->
                         <div class="col-sm-9" style="margin-left: auto;">
                             <button id="saveSettingsBtn" class="btn btn-secondary">Save Settings</button>
+                            <button id="loadSettingsBtn" class="btn btn-secondary">Load Settings</button>
                             <button id="runBtn" class="btn btn-success">Run</button>
                         </div>
                     </div>
@@ -161,6 +162,10 @@
                 // Save settings button event listener
                 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
                 saveSettingsBtn.addEventListener('click', saveSettings);
+
+                // Load settings button event listener
+                const loadSettingsBtn = document.getElementById('loadSettingsBtn');
+                loadSettingsBtn.addEventListener('click', loadSavedSettings);
 
                 // Run button event listener
                 const runBtn = document.getElementById('runBtn');
@@ -206,28 +211,14 @@
                         });
                 }
 
-                // Load saved settings (only called when page is first loaded)
+                // Load saved settings
                 function loadSavedSettings() {
                     fetch('/pppd/get-settings', { method: 'POST' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                // Set from last used
-                                if (data.last_used && data.last_used.device) {
-                                    deviceSelect.value = data.last_used.device;
-                                }
-
-                                if (data.last_used && data.last_used.baudrate) {
-                                    baudrateInput.value = data.last_used.baudrate;
-                                }
-
-                                if (data.last_used && data.last_used.local_ip_address) {
-                                    localIpAddressInput.value = data.last_used.local_ip_address;
-                                }
-
-                                if (data.last_used && data.last_used.remote_ip_address) {
-                                    remoteIpAddressInput.value = data.last_used.remote_ip_address;
-                                }
+                                progressLog.value = "Settings loaded successfully\n";
+                                progressLog.scrollTop = progressLog.scrollHeight;
 
                                 // Set device
                                 if (data.pppd && data.pppd.device !== undefined) {
@@ -246,16 +237,17 @@
 
                                 // Set remote_ip_address
                                 if (data.pppd && data.pppd.remote_ip_address !== undefined) {
-                                    localIpAddressInput.value = data.pppd.remote_ip_address;
+                                    remoteIpAddressInput.value = data.pppd.remote_ip_address;
                                 }
-
-                                console.log('Settings loaded successfully');
                             } else {
-                                console.error('Failed to load settings:', data.message);
+                                progressLog.value = "Failed to load settings\n";
+                                progressLog.scrollTop = progressLog.scrollHeight;
                             }
                         })
                         .catch(error => {
-                            console.error('Error loading settings:', error);
+                            progressLog.value = "Error loading settings\n";
+                            progressLog.scrollTop = progressLog.scrollHeight;
+                            console.error('Error:', error);
                         });
                 }
 

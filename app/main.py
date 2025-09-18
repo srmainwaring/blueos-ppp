@@ -72,9 +72,6 @@ async def startup_auto_restart():
         if enabled:
             logger.info(f"{logging_prefix_str} auto-restarting")
 
-            # Get last used settings for auto-restart
-            last_used = settings.get_last_used()
-
             # call startup function in a background thread
             asyncio.create_task(start_pppd_internal())
 
@@ -125,9 +122,6 @@ async def get_pppd_settings() -> Dict[str, Any]:
     logger.debug("Getting PPP daemon settings")
 
     try:
-        # Get the last used settings
-        last_used = settings.get_last_used()
-
         # Get settings
         device = settings.get_pppd_device()
         baudrate = settings.get_pppd_baudrate()
@@ -136,11 +130,12 @@ async def get_pppd_settings() -> Dict[str, Any]:
 
         return {
             "success": True,
-            "last_used": last_used,
-            "device": device,
-            "baudrate": baudrate,
-            "local_ip_address": local_ip_address,
-            "remote_ip_address": remote_ip_address,
+            "pppd": {
+                "device": device,
+                "baudrate": baudrate,
+                "local_ip_address": local_ip_address,
+                "remote_ip_address": remote_ip_address,
+            },
         }
     except Exception as e:
         logger.exception(f"Error getting PPP daemon settings: {str(e)}")
