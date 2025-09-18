@@ -1,61 +1,415 @@
+<!--
+    BlueOS PPP Daemon Extension HTML file
+
+    The page includes these elements:
+    - Device
+    - Baudrate
+    - Local IP address
+    - Remote IP address
+    - Save Settings button to save the current settings
+    - "Run" / "Stop" button to start or stop the PPP daemon. This setting is persistent
+    - Progress text area to display the status of the latest action
+
+    Each button calls function executed by the main.py python backend
+-->
+
 <html>
     <head>
-        <title>QuickStart</title>
-        <script type="text/javascript" after defer>
-            // setup
-            function window_url() {
-                return window.location.protocol + '//' + window.location.hostname;
-            };
-            async function frontend_perm_load() {
-                var response = await fetch(window_url() + "/bag/v1.0/get/quickstart_frontend_perm_count");
-                if (response.status === 400) {
-                    return 0; // count not already stored, start from 0/unclicked
-                }
-                return (await response.json())["value"];
-            };
-
-            // callbacks
-            var frontend_count = 0;
-            function frontend_temp_click() {
-                frontend_count += 1;
-                document.getElementById("frontend_temp").textContent = frontend_count;
-            };
-            async function frontend_perm_click() {
-                var count = await frontend_perm_load();
-                count += 1;
-                fetch(window_url() + "/bag/v1.0/set/quickstart_frontend_perm_count", {
-                    method: "post",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        value: count
-                    })
-                });
-                document.getElementById("frontend_perm").textContent = count;
-            };
-            async function backend_temp_click() {
-                document.getElementById("backend_temp").textContent = (await (await fetch("/temp_count")).json())["value"];
-            };
-            async function backend_perm_click() {
-                document.getElementById("backend_perm").textContent = (await (await fetch("/persistent_count")).json())["value"];
-            };
-
-            // load frontend-triggered persistent state
-            document.getElementById("frontend_perm").textContent = frontend_perm_load();
-            // don't load backend-triggered persistent state, because doing so counts as a click
-        </script>
+        <title>PPP Daemon</title>
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #0088CC; /* BlueOS blue background */
+                color: white; /* White text for better contrast on blue */
+            }
+            h1 {
+                margin-bottom: 20px;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            .card {
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                margin-bottom: 20px;
+                background-color: white; /* White card on blue background */
+                color: #333; /* Dark text for contrast on white card */
+            }
+            .card-body {
+                padding: 15px;
+            }
+            .row {
+                display: flex;
+                margin-bottom: 10px;
+            }
+            .col-form-label {
+                flex: 0 0 30%;
+            }
+            .col-sm-9 {
+                flex: 0 0 70%;
+            }
+            .form-control, .form-select {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            .btn {
+                padding: 8px 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                border: none;
+                margin-right: 5px;
+            }
+            .btn-primary {
+                background-color: #0088CC; /* Use BlueOS blue for primary buttons */
+                color: white;
+            }
+            .btn-success {
+                background-color: #28a745;
+                color: white;
+            }
+            .btn-danger {
+                background-color: #dc3545;
+                color: white;
+            }
+            .btn-secondary {
+                background-color: #6c757d;
+                color: white;
+            }
+            textarea {
+                width: 100%;
+                font-family: monospace;
+                resize: vertical; /* Allow vertical resizing only, prevent horizontal resizing */
+                max-width: 100%; /* Ensure textarea doesn't exceed its container */
+                box-sizing: border-box; /* Include padding and border in the element's width */
+            }
+            .mb-3 {
+                margin-bottom: 15px;
+            }
+            .text-muted {
+                color: #6c757d;
+                font-size: 0.875em;
+            }
+        </style>
     </head>
     <body>
-        <h1>Quick Start Functionalities</h1>
-        <button type="button" onclick="frontend_temp_click()">Frontend Temporary</button>
-        <p>Clicks: <a id="frontend_temp">0</a></p>
-        <button type="button" onclick="frontend_perm_click()">Frontend Persistent</button>
-        <p>Clicks: <a id="frontend_perm">?</a></p>
-        <button type="button" onclick="backend_temp_click()">Backend Temporary</button>
-        <p>Clicks: <a id="backend_temp">0</a></p>
-        <button type="button" onclick="backend_perm_click()">Backend Persistent</button>
-        <p>Clicks: <a id="backend_perm">?</a></p>
+        <div class="container">
+            <h1>PPP Daemon</h1>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <!-- Device input -->
+                        <label for="device" class="col-form-label">Device:</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="device">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- Baudrate input -->
+                        <label for="baudrate" class="col-form-label">Baudrate:</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control" id="baudrate">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- Local IP address input -->
+                        <label for="localIpAddress" class="col-form-label">Local IP Address:</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="localIpAddress">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- Remote IP address input -->
+                        <label for="remoteIpAddress" class="col-form-label">Remote IP Address:</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="remoteIpAddress">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <!-- Action buttons -->
+                        <div class="col-sm-9" style="margin-left: auto;">
+                            <button id="saveSettingsBtn" class="btn btn-secondary">Save Settings</button>
+                            <button id="runBtn" class="btn btn-success">Run</button>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- Progress text area -->
+                        <label for="progressLog" class="col-form-label">Progress:</label>
+                        <div class="col-sm-9">
+                            <textarea id="progressLog" class="form-control" rows="10" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // PPP daemon management logic
+            document.addEventListener('DOMContentLoaded', async function() {
+                // get document elements which have no listeners
+                const deviceInput = document.getElementById('device');
+                const baudrateInput = document.getElementById('baudrate');
+                const localIpAddressInput = document.getElementById('localIpAddress');
+                const remoteIpAddressInput = document.getElementById('remoteIpAddress');
+
+                // Save settings button event listener
+                const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+                saveSettingsBtn.addEventListener('click', saveSettings);
+
+                // Run button event listener
+                const runBtn = document.getElementById('runBtn');
+                runBtn.addEventListener('click', togglePppd);
+
+                // Load saved settings
+                loadSavedSettings();
+
+                // Check initial PPP daemon status
+                checkPppdStatus();
+
+                // Save settings button event listener
+                function saveSettings() {
+                    const device = deviceInput.value;
+                    const baudrate = baudrateInput.value;
+                    const local_ip_address = localIpAddressInput.value;
+                    const remote_ip_address = remoteIpAddressInput.value;
+
+                    const params = new URLSearchParams({
+                        device: device,
+                        baudrate: baudrate,
+                        local_ip_address: local_ip_address,
+                        remote_ip_address: remote_ip_address
+                    });
+
+                    fetch(`/pppd/save-settings?${params.toString()}`, {
+                        method: 'POST'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                progressLog.value = "Settings saved successfully\n";
+                                progressLog.scrollTop = progressLog.scrollHeight;
+                            } else {
+                                progressLog.value = "Failed to save settings\n";
+                                progressLog.scrollTop = progressLog.scrollHeight;
+                            }
+                        })
+                        .catch(error => {
+                            progressLog.value = "Error saving settings\n";
+                            progressLog.scrollTop = progressLog.scrollHeight;
+                            console.error('Error:', error);
+                        });
+                }
+
+                // Load saved settings (only called when page is first loaded)
+                function loadSavedSettings() {
+                    fetch('/pppd/get-settings', { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Set from last used
+                                if (data.last_used && data.last_used.device) {
+                                    deviceSelect.value = data.last_used.device;
+                                }
+
+                                if (data.last_used && data.last_used.baudrate) {
+                                    baudrateInput.value = data.last_used.baudrate;
+                                }
+
+                                if (data.last_used && data.last_used.local_ip_address) {
+                                    localIpAddressInput.value = data.last_used.local_ip_address;
+                                }
+
+                                if (data.last_used && data.last_used.remote_ip_address) {
+                                    remoteIpAddressInput.value = data.last_used.remote_ip_address;
+                                }
+
+                                // Set device
+                                if (data.pppd && data.pppd.device !== undefined) {
+                                    deviceInput.value = data.pppd.device;
+                                }
+
+                                // Set baudrate
+                                if (data.pppd && data.pppd.baudrate !== undefined) {
+                                    baudrateInput.value = data.pppd.baudrate;
+                                }
+
+                                // Set local_ip_address
+                                if (data.pppd && data.pppd.local_ip_address !== undefined) {
+                                    localIpAddressInput.value = data.pppd.local_ip_address;
+                                }
+
+                                // Set remote_ip_address
+                                if (data.pppd && data.pppd.remote_ip_address !== undefined) {
+                                    localIpAddressInput.value = data.pppd.remote_ip_address;
+                                }
+
+                                console.log('Settings loaded successfully');
+                            } else {
+                                console.error('Failed to load settings:', data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading settings:', error);
+                        });
+                }
+
+                // Toggle PPP daemon function
+                function togglePppd() {
+                    // Check if PPP daemon is currently running
+                    fetch('/pppd/status', { method: 'GET' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.running) {
+                                // Stop PPP daemon
+                                stopPppd();
+                            } else {
+                                // Start PPP daemon
+                                startPppd();
+                            }
+                        })
+                        .catch(error => {
+                            progressLog.value += `Error checking status: ${error}\n`;
+                            progressLog.scrollTop = progressLog.scrollHeight;
+                        });
+                }
+
+                // Start PPP daemon
+                function startPppd() {
+                    progressLog.value = `Starting PPP daemon...\n`;
+                    progressLog.scrollTop = progressLog.scrollHeight;
+
+                    fetch(`/pppd/start`, {
+                        method: 'POST'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                progressLog.value += "PPP daemon started successfully\n";
+                                runBtn.textContent = "Stop";
+                                runBtn.className = "btn btn-danger";
+                                // Save the enabled state
+                                savePppdState(true);
+                            } else {
+                                // failed to start, print error message and restore Run button
+                                progressLog.value += `Failed to start PPP daemon: ${data.message}\n`;
+                                runBtn.textContent = "Run";
+                                runBtn.className = "btn btn-success";
+                            }
+                            progressLog.scrollTop = progressLog.scrollHeight;
+                        })
+                        .catch(error => {
+                            // failed to start, print error message and restore Run button
+                            progressLog.value += `Error starting PPP daemon: ${error}\n`;
+                            runBtn.textContent = "Run";
+                            runBtn.className = "btn btn-success";
+                            progressLog.scrollTop = progressLog.scrollHeight;
+                        });
+                }
+
+                // Stop PPP daemon
+                function stopPppd() {
+                    progressLog.value = "Stopping PPP daemon...\n";
+                    progressLog.scrollTop = progressLog.scrollHeight;
+
+                    fetch('/pppd/stop', { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                progressLog.value += "PPP daemon stopped\n";
+                                runBtn.textContent = "Run";
+                                runBtn.className = "btn btn-success";
+                                // Save the disabled state
+                                savePppdState(false);
+                            } else {
+                                progressLog.value += `Failed to stop PPP daemon: ${data.message}\n`;
+                            }
+                            progressLog.scrollTop = progressLog.scrollHeight;
+                        })
+                        .catch(error => {
+                            progressLog.value += `Error stopping PPP daemon: ${error}\n`;
+                            progressLog.scrollTop = progressLog.scrollHeight;
+                        });
+                }
+
+                // Check PPP daemon status and update button accordingly
+                function checkPppdStatus() {
+                    // First check the saved enabled state from settings
+                    fetch('/pppd/get-enabled-state', { method: 'GET' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                if (data.enabled) {
+                                    // PPP daemon should be enabled, check if it's actually running
+                                    fetch('/pppd/status', { method: 'GET' })
+                                        .then(response => response.json())
+                                        .then(statusData => {
+                                            if (statusData.running) {
+                                                runBtn.textContent = "Stop";
+                                                runBtn.className = "btn btn-danger";
+                                            } else {
+                                                // failed to start, print error message and restore Run button
+                                                runBtn.textContent = "Run";
+                                                runBtn.className = "btn btn-success";
+                                                progressLog.value += "PPP daemon was enabled but failed to start automatically\n";
+                                                progressLog.scrollTop = progressLog.scrollHeight;
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error checking PPP daemon runtime status:', error);
+                                        });
+                                } else {
+                                    // PPP daemon should be disabled
+                                    runBtn.textContent = "Run";
+                                    runBtn.className = "btn btn-success";
+                                }
+                            } else {
+                                console.error('Failed to get PPP daemon enabled state:', data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking PPP daemon enabled state:', error);
+                            // Fallback to just checking runtime status
+                            fetch('/pppd/status', { method: 'GET' })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.running) {
+                                        runBtn.textContent = "Stop";
+                                        runBtn.className = "btn btn-danger";
+                                    } else {
+                                        runBtn.textContent = "Run";
+                                        runBtn.className = "btn btn-success";
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error checking PPP daemon status:', error);
+                                });
+                        });
+                }
+
+                // Save PPP daemon enabled state to settings
+                function savePppdState(enabled) {
+                    fetch(`/pppd/save-enabled-state?enabled=${enabled}`, {
+                        method: 'POST'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log(`PPP daemon state saved: ${enabled}`);
+                            } else {
+                                console.error('Failed to save PPP daemon state:', data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error saving PPP daemon state:', error);
+                        });
+                }
+            });
+        </script>
     </body>
 </html>
