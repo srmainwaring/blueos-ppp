@@ -61,9 +61,7 @@ LABEL version="0.0.1"
 # "Binds" section maps the host PC directories to the application directories
 LABEL permissions='\
 {\
-  "ExposedPorts": {\
-    "8000/tcp": {}\
-  },\
+  "NetworkMode": "host",\
   "HostConfig": {\
     "Privileged": true,\
     "Binds":[\
@@ -73,17 +71,8 @@ LABEL permissions='\
     ],\
     "CpuQuota": 100000,\
     "CpuPeriod": 100000,\
-    "ExtraHosts": [\
-      "host.docker.internal:host-gateway"\
-    ],\
     "NetworkMode": "host",\
-    "PortBindings": {\
-      "8000/tcp": [\
-        {\
-          "HostPort": ""\
-        }\
-      ]\
-    }\
+    "PortBindings": null\
   }\
 }'
 
@@ -107,4 +96,4 @@ LABEL links='{\
     }'
 LABEL requirements="core >= 1.1"
 
-ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0"]
+ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9132"]
