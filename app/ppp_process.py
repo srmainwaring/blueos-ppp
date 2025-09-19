@@ -5,19 +5,19 @@ import threading
 
 from pathlib import Path
 
-logger = logging.getLogger("pppd.settings")
+logger = logging.getLogger("ppp.daemon")
 
 PPPD_EXECUTABLE = Path("/ppp_ws/ppp/pppd/pppd")
 # PPPD_EXECUTABLE = Path("/shortcuts/userdata/code/ppp_ws/ppp/pppd/pppd"),
 
 
 class PPPDaemon:
-    def __init__(self):
+    def __init__(self, device, baudrate, local, remote):
         # arguments
-        self.device = "/dev/ttyS0"
-        self.baudrate = "921699"
-        self.local = "192.168.1.205"
-        self.remote = "192.168.1.200"
+        self.device = device
+        self.baudrate = baudrate
+        self.local = local
+        self.remote = remote
 
         # signal whether to enable / disable / shutdown the daemon
         self.lock = threading.Lock()
@@ -34,33 +34,36 @@ class PPPDaemon:
     def child_task(self):
         "Run pppd as a subprocess"
 
-        args = [
-            PPPD_EXECUTABLE,
-            f"{self.device}",
-            f"{self.baudrate}",
-            f"{self.local}:{self.remote}",
-            "debug",
-            "noauth",
-            "nodetach",
-            "crtscts",
-            "local",
-            "proxyarp",
-            "ktune",
-        ]
-
         is_running = False
         do_shutdown = False
         pppd_process = None
+
         while not do_shutdown:
             with self.lock:
                 is_enabled = self.is_enabled
                 do_shutdown = self.do_shutdown
 
             if is_enabled and not is_running and pppd_process is None:
+                # update args in case changed
+                with self.lock:
+                    args = [
+                        PPPD_EXECUTABLE,
+                        f"{self.device}",
+                        f"{self.baudrate}",
+                        f"{self.local}:{self.remote}",
+                        "debug",
+                        "noauth",
+                        "nodetach",
+                        "crtscts",
+                        "local",
+                        "proxyarp",
+                        "ktune",
+                    ]
+
                 # start proces
                 pppd_process = subprocess.Popen(args)
                 is_running = True
-                print("PPP started")
+                logger.info("PPP started")
 
             if not is_enabled and is_running and pppd_process is not None:
                 pppd_process.terminate()
@@ -71,7 +74,7 @@ class PPPDaemon:
                     time.sleep(1)
                 pppd_process = None
                 is_running = False
-                print("PPP stopped")
+                logger.info("PPP stopped")
 
             # check if still alive
             if pppd_process is not None:

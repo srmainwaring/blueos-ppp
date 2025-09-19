@@ -83,7 +83,7 @@ async def startup_auto_restart():
 
 # Internal function to start PPP
 async def start_ppp_internal():
-    """Internal function to start the PPP"""
+    """Internal function to start PPP"""
     global ppp_running
     global ppp_daemon
 
@@ -91,7 +91,7 @@ async def start_ppp_internal():
     logging_prefix_str = "ppp:"
 
     try:
-        logger.info(f"{logging_prefix_str} started")
+        logger.info(f"{logging_prefix_str} starting...")
         ppp_running = True
 
         # Get settings
@@ -101,12 +101,17 @@ async def start_ppp_internal():
         remote_ip_address = settings.get_ppp_remote_ip_address()
 
         if ppp_daemon is None:
-            ppp_daemon = ppp_process.PPPDaemon()
-        
+            ppp_daemon = ppp_process.PPPDaemon(
+                device, baudrate, local_ip_address, remote_ip_address
+            )
+
+        # update settings
         ppp_daemon.device = device
         ppp_daemon.baudrate = baudrate
         ppp_daemon.local = local_ip_address
         ppp_daemon.remote = remote_ip_address
+
+        # start
         ppp_daemon.start()
 
         # log settings used
@@ -123,6 +128,27 @@ async def start_ppp_internal():
     finally:
         logger.info(f"{logging_prefix_str} stopped")
 
+
+# Internal function to stop PPP
+async def stop_ppp_internal():
+    """Internal function to stop PPP"""
+    global ppp_running
+    global ppp_daemon
+
+    # logging prefix for all messages from this function
+    logging_prefix_str = "ppp:"
+
+    try:
+        logger.info(f"{logging_prefix_str} stopping...")
+        ppp_running = False
+
+        if ppp_daemon is not None:
+            ppp_daemon.stop()
+
+    except Exception as e:
+        logger.error(f"{logging_prefix_str} error {str(e)}")
+    finally:
+        logger.info(f"{logging_prefix_str} stopped")
 
 # PPP API Endpoints
 
@@ -175,9 +201,7 @@ async def save_ppp_settings(
     device_success = settings.update_ppp_device(device)
     baudrate_success = settings.update_ppp_baudrate(baudrate)
     local_ip_address_success = settings.update_ppp_local_ip_address(local_ip_address)
-    remote_ip_address_success = settings.update_ppp_remote_ip_address(
-        remote_ip_address
-    )
+    remote_ip_address_success = settings.update_ppp_remote_ip_address(remote_ip_address)
 
     if (
         device_success
@@ -276,10 +300,25 @@ async def stop_ppp() -> Dict[str, Any]:
     logger.info("Stop PPP request received")
 
     try:
-        # Stop PPP
-        ppp_running = False
 
-        return {"success": True, "message": "PPP stopped successfully"}
+        # Stop PPP
+        asyncio.create_task(stop_ppp_internal())
+
+        # Wait a few seconds to catch immediate failures
+        await asyncio.sleep(2)
+
+        # Check if it's stopped
+        if not ppp_running:
+            return {
+                "success": True,
+                "message": f"PPP stopped successfully",
+            }
+        else:
+            return {
+                "success": False,
+                "message": "PPP failed to stop (check logs for details)",
+            }
+
     except Exception as e:
         logger.exception(f"Error stopping PPP: {str(e)}")
         return {"success": False, "message": f"Failed to stop: {str(e)}"}
