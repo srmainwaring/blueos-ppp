@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
-# Manage PPP daemon settings
+# Manage PPP settings
 
 import json
 import os
 import logging
 from pathlib import Path
 
-logger = logging.getLogger("pppd.settings")
+logger = logging.getLogger("ppp.settings")
 
 # Settings file path - stored in the extension's persistent storage directory
-SETTINGS_FILE = Path("/app/settings/pppd-settings.json")
+SETTINGS_FILE = Path("/app/settings/ppp-settings.json")
 
-# Default PPP daemon settings
+# Default PPP settings
 # enabled:              false
 # device:               /dev/ttyS0
 # baudrate:             921600
@@ -20,7 +20,7 @@ SETTINGS_FILE = Path("/app/settings/pppd-settings.json")
 # remote_ip_address:    192.168.1.200
 
 DEFAULT_SETTINGS = {
-    "pppd": {
+    "ppp": {
         "enabled": False,
         "device": "/dev/ttyS0",
         "baudrate": "921600",
@@ -78,35 +78,35 @@ def save_settings(settings):
         logger.error(f"Error saving settings: {e}")
 
 
-# get the PPP daemon enabled state
-def get_pppd_enabled():
+# get the PPP enabled state
+def get_ppp_enabled():
     """
-    Get the PPP daemon enabled state
+    Get the PPP enabled state
 
     Returns:
-        bool: True if the PPP daemon is enabled, False otherwise
+        bool: True if PPP is enabled, False otherwise
     """
     try:
         settings = get_settings()
 
-        # Check if PPP daemon section exists
-        if "pppd" in settings and "enabled" in settings["pppd"]:
-            return settings["pppd"]["enabled"]
+        # Check if PPP section exists
+        if "ppp" in settings and "enabled" in settings["ppp"]:
+            return settings["ppp"]["enabled"]
 
         # Return default if not found
-        return DEFAULT_SETTINGS["pppd"]["enabled"]
+        return DEFAULT_SETTINGS["ppp"]["enabled"]
     except Exception as e:
-        logger.error(f"Error getting PPP daemon enabled state: {e}")
+        logger.error(f"Error getting PPP enabled state: {e}")
         return False
 
 
-# update the PPP daemon enabled state
-def update_pppd_enabled(enabled):
+# update the PPP enabled state
+def update_ppp_enabled(enabled):
     """
-    Update the PPP daemon enabled state
+    Update the PPP enabled state
 
     Args:
-        enabled (bool): Whether the PPP daemon is enabled
+        enabled (bool): Whether PPP is enabled
 
     Returns:
         bool: True if successful, False otherwise
@@ -114,35 +114,35 @@ def update_pppd_enabled(enabled):
     try:
         settings = get_settings()
 
-        # Ensure PPP daemon section exists
-        if "pppd" not in settings:
-            settings["pppd"] = {}
+        # Ensure PPP section exists
+        if "ppp" not in settings:
+            settings["ppp"] = {}
 
-        settings["pppd"]["enabled"] = enabled
+        settings["ppp"]["enabled"] = enabled
 
         save_settings(settings)
         return True
     except Exception as e:
-        logger.error(f"Error updating PPP daemon enabled state: {e}")
+        logger.error(f"Error updating PPP enabled state: {e}")
         return False
 
 
-# get PPP daemon device
-def get_pppd_device():
+# get PPP device
+def get_ppp_device():
     """
-    Get the PPP daemon device
+    Get the PPP device
 
     Returns:
         str: The device (default: /dev/ttyS0)
     """
     settings = get_settings()
-    return settings.get("pppd", {}).get("device", DEFAULT_SETTINGS["pppd"]["device"])
+    return settings.get("ppp", {}).get("device", DEFAULT_SETTINGS["ppp"]["device"])
 
 
-# update PPP daemon device
-def update_pppd_device(device):
+# update PPP device
+def update_ppp_device(device):
     """
-    Update PPP daemon device
+    Update PPP device
 
     Args:
         device (str): The device name
@@ -153,37 +153,37 @@ def update_pppd_device(device):
     try:
         settings = get_settings()
 
-        # Ensure PPP daemon section exists
-        if "pppd" not in settings:
-            settings["pppd"] = {}
+        # Ensure PPP section exists
+        if "ppp" not in settings:
+            settings["ppp"] = {}
 
-        settings["pppd"]["device"] = device
+        settings["ppp"]["device"] = device
 
         save_settings(settings)
         return True
     except Exception as e:
-        logger.error(f"Error updating PPP daemon settings: {e}")
+        logger.error(f"Error updating PPP settings: {e}")
         return False
 
 
-# get PPP daemon baudrate
-def get_pppd_baudrate():
+# get PPP baudrate
+def get_ppp_baudrate():
     """
-    Get the PPP daemon baudrate
+    Get the PPP baudrate
 
     Returns:
         int: The baudrate (default: 921600)
     """
     settings = get_settings()
-    return settings.get("pppd", {}).get(
-        "baudrate", DEFAULT_SETTINGS["pppd"]["baudrate"]
+    return settings.get("ppp", {}).get(
+        "baudrate", DEFAULT_SETTINGS["ppp"]["baudrate"]
     )
 
 
-# update PPP daemon baudrate
-def update_pppd_baudrate(baudrate):
+# update PPP baudrate
+def update_ppp_baudrate(baudrate):
     """
-    Update PPP daemon baudrate
+    Update PPP baudrate
 
     Args:
         baudrate (int): The baudrate
@@ -194,37 +194,37 @@ def update_pppd_baudrate(baudrate):
     try:
         settings = get_settings()
 
-        # Ensure PPP daemon section exists
-        if "pppd" not in settings:
-            settings["pppd"] = {}
+        # Ensure PPP section exists
+        if "ppp" not in settings:
+            settings["ppp"] = {}
 
-        settings["pppd"]["baudrate"] = baudrate
+        settings["ppp"]["baudrate"] = baudrate
 
         save_settings(settings)
         return True
     except Exception as e:
-        logger.error(f"Error updating PPP daemon settings: {e}")
+        logger.error(f"Error updating PPP settings: {e}")
         return False
 
 
-# get PPP daemon local ip address
-def get_pppd_local_ip_address():
+# get PPP local ip address
+def get_ppp_local_ip_address():
     """
-    Get the PPP daemon local ip address
+    Get the PPP local ip address
 
     Returns:
         str: The local ip address (default: 192.168.1.205)
     """
     settings = get_settings()
-    return settings.get("pppd", {}).get(
-        "local_ip_address", DEFAULT_SETTINGS["pppd"]["local_ip_address"]
+    return settings.get("ppp", {}).get(
+        "local_ip_address", DEFAULT_SETTINGS["ppp"]["local_ip_address"]
     )
 
 
-# update PPP daemon local ip address
-def update_pppd_local_ip_address(ip_addr):
+# update PPP local ip address
+def update_ppp_local_ip_address(ip_addr):
     """
-    Update PPP daemon local ip address
+    Update PPP local ip address
 
     Args:
         ip_addr (str): The local ip address
@@ -235,37 +235,37 @@ def update_pppd_local_ip_address(ip_addr):
     try:
         settings = get_settings()
 
-        # Ensure PPP daemon section exists
-        if "pppd" not in settings:
-            settings["pppd"] = {}
+        # Ensure PPP section exists
+        if "ppp" not in settings:
+            settings["ppp"] = {}
 
-        settings["pppd"]["local_ip_address"] = ip_addr
+        settings["ppp"]["local_ip_address"] = ip_addr
 
         save_settings(settings)
         return True
     except Exception as e:
-        logger.error(f"Error updating PPP daemon settings: {e}")
+        logger.error(f"Error updating PPP settings: {e}")
         return False
 
 
-# get PPP daemon remote ip address
-def get_pppd_remote_ip_address():
+# get PPP remote ip address
+def get_ppp_remote_ip_address():
     """
-    Get the PPP daemon remote ip address
+    Get the PPP remote ip address
 
     Returns:
         str: The remote ip address (default: 192.168.1.205)
     """
     settings = get_settings()
-    return settings.get("pppd", {}).get(
-        "remote_ip_address", DEFAULT_SETTINGS["pppd"]["remote_ip_address"]
+    return settings.get("ppp", {}).get(
+        "remote_ip_address", DEFAULT_SETTINGS["ppp"]["remote_ip_address"]
     )
 
 
-# update PPP daemon remote ip address
-def update_pppd_remote_ip_address(ip_addr):
+# update PPP remote ip address
+def update_ppp_remote_ip_address(ip_addr):
     """
-    Update PPP daemon remote ip address
+    Update PPP remote ip address
 
     Args:
         ip_addr (str): The remote ip address
@@ -276,14 +276,14 @@ def update_pppd_remote_ip_address(ip_addr):
     try:
         settings = get_settings()
 
-        # Ensure PPP daemon section exists
-        if "pppd" not in settings:
-            settings["pppd"] = {}
+        # Ensure PPP section exists
+        if "ppp" not in settings:
+            settings["ppp"] = {}
 
-        settings["pppd"]["remote_ip_address"] = ip_addr
+        settings["ppp"]["remote_ip_address"] = ip_addr
 
         save_settings(settings)
         return True
     except Exception as e:
-        logger.error(f"Error updating PPP daemon settings: {e}")
+        logger.error(f"Error updating PPP settings: {e}")
         return False

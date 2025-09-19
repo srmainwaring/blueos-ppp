@@ -1,5 +1,5 @@
 <!--
-    BlueOS PPP Daemon Extension HTML file
+    BlueOS PPP Extension HTML file
 
     The page includes these elements:
     - Device
@@ -7,7 +7,7 @@
     - Local IP address
     - Remote IP address
     - Save Settings button to save the current settings
-    - "Run" / "Stop" button to start or stop the PPP daemon. This setting is persistent
+    - "Run" / "Stop" button to start or stop PPP. This setting is persistent
     - Progress text area to display the status of the latest action
 
     Each button calls function executed by the main.py python backend
@@ -15,7 +15,7 @@
 
 <html>
     <head>
-        <title>PPP Daemon</title>
+        <title>PPP</title>
         <link rel="icon" href="/favicon.ico" type="image/x-icon">
         <style>
             body {
@@ -99,7 +99,7 @@
     </head>
     <body>
         <div class="container">
-            <h1>PPP Daemon</h1>
+            <h1>PPP</h1>
             <div class="card">
                 <div class="card-body">
                     <div class="row mb-3">
@@ -151,7 +151,7 @@
         </div>
 
         <script>
-            // PPP daemon management logic
+            // PPP management logic
             document.addEventListener('DOMContentLoaded', async function() {
                 // get document elements which have no listeners
                 const deviceInput = document.getElementById('device');
@@ -169,13 +169,13 @@
 
                 // Run button event listener
                 const runBtn = document.getElementById('runBtn');
-                runBtn.addEventListener('click', togglePppd);
+                runBtn.addEventListener('click', togglePPP);
 
                 // Load saved settings
                 loadSavedSettings();
 
-                // Check initial PPP daemon status
-                checkPppdStatus();
+                // Check initial PPP status
+                checkPPPStatus();
 
                 // Save settings button event listener
                 function saveSettings() {
@@ -191,7 +191,7 @@
                         remote_ip_address: remote_ip_address
                     });
 
-                    fetch(`/pppd/save-settings?${params.toString()}`, {
+                    fetch(`/ppp/save-settings?${params.toString()}`, {
                         method: 'POST'
                     })
                         .then(response => response.json())
@@ -213,7 +213,7 @@
 
                 // Load saved settings
                 function loadSavedSettings() {
-                    fetch('/pppd/get-settings', { method: 'POST' })
+                    fetch('/ppp/get-settings', { method: 'POST' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -221,23 +221,23 @@
                                 progressLog.scrollTop = progressLog.scrollHeight;
 
                                 // Set device
-                                if (data.pppd && data.pppd.device !== undefined) {
-                                    deviceInput.value = data.pppd.device;
+                                if (data.ppp && data.ppp.device !== undefined) {
+                                    deviceInput.value = data.ppp.device;
                                 }
 
                                 // Set baudrate
-                                if (data.pppd && data.pppd.baudrate !== undefined) {
-                                    baudrateInput.value = data.pppd.baudrate;
+                                if (data.ppp && data.ppp.baudrate !== undefined) {
+                                    baudrateInput.value = data.ppp.baudrate;
                                 }
 
                                 // Set local_ip_address
-                                if (data.pppd && data.pppd.local_ip_address !== undefined) {
-                                    localIpAddressInput.value = data.pppd.local_ip_address;
+                                if (data.ppp && data.ppp.local_ip_address !== undefined) {
+                                    localIpAddressInput.value = data.ppp.local_ip_address;
                                 }
 
                                 // Set remote_ip_address
-                                if (data.pppd && data.pppd.remote_ip_address !== undefined) {
-                                    remoteIpAddressInput.value = data.pppd.remote_ip_address;
+                                if (data.ppp && data.ppp.remote_ip_address !== undefined) {
+                                    remoteIpAddressInput.value = data.ppp.remote_ip_address;
                                 }
                             } else {
                                 progressLog.value = "Failed to load settings\n";
@@ -251,18 +251,18 @@
                         });
                 }
 
-                // Toggle PPP daemon function
-                function togglePppd() {
-                    // Check if PPP daemon is currently running
-                    fetch('/pppd/status', { method: 'GET' })
+                // Toggle PPP function
+                function togglePPP() {
+                    // Check if PPP is currently running
+                    fetch('/ppp/status', { method: 'GET' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.running) {
-                                // Stop PPP daemon
-                                stopPppd();
+                                // Stop PPP
+                                stopPPP();
                             } else {
-                                // Start PPP daemon
-                                startPppd();
+                                // Start PPP
+                                startPPP();
                             }
                         })
                         .catch(error => {
@@ -271,25 +271,25 @@
                         });
                 }
 
-                // Start PPP daemon
-                function startPppd() {
-                    progressLog.value = `Starting PPP daemon...\n`;
+                // Start PPP
+                function startPPP() {
+                    progressLog.value = `Starting PPP ...\n`;
                     progressLog.scrollTop = progressLog.scrollHeight;
 
-                    fetch(`/pppd/start`, {
+                    fetch(`/ppp/start`, {
                         method: 'POST'
                     })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                progressLog.value += "PPP daemon started successfully\n";
+                                progressLog.value += "PPP started successfully\n";
                                 runBtn.textContent = "Stop";
                                 runBtn.className = "btn btn-danger";
                                 // Save the enabled state
-                                savePppdState(true);
+                                savePPPState(true);
                             } else {
                                 // failed to start, print error message and restore Run button
-                                progressLog.value += `Failed to start PPP daemon: ${data.message}\n`;
+                                progressLog.value += `Failed to start PPP: ${data.message}\n`;
                                 runBtn.textContent = "Run";
                                 runBtn.className = "btn btn-success";
                             }
@@ -297,48 +297,48 @@
                         })
                         .catch(error => {
                             // failed to start, print error message and restore Run button
-                            progressLog.value += `Error starting PPP daemon: ${error}\n`;
+                            progressLog.value += `Error starting PPP: ${error}\n`;
                             runBtn.textContent = "Run";
                             runBtn.className = "btn btn-success";
                             progressLog.scrollTop = progressLog.scrollHeight;
                         });
                 }
 
-                // Stop PPP daemon
-                function stopPppd() {
-                    progressLog.value = "Stopping PPP daemon...\n";
+                // Stop PPP
+                function stopPPP() {
+                    progressLog.value = "Stopping PPP ...\n";
                     progressLog.scrollTop = progressLog.scrollHeight;
 
-                    fetch('/pppd/stop', { method: 'POST' })
+                    fetch('/ppp/stop', { method: 'POST' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                progressLog.value += "PPP daemon stopped\n";
+                                progressLog.value += "PPP stopped\n";
                                 runBtn.textContent = "Run";
                                 runBtn.className = "btn btn-success";
                                 // Save the disabled state
-                                savePppdState(false);
+                                savePPPState(false);
                             } else {
-                                progressLog.value += `Failed to stop PPP daemon: ${data.message}\n`;
+                                progressLog.value += `Failed to stop PPP: ${data.message}\n`;
                             }
                             progressLog.scrollTop = progressLog.scrollHeight;
                         })
                         .catch(error => {
-                            progressLog.value += `Error stopping PPP daemon: ${error}\n`;
+                            progressLog.value += `Error stopping PPP: ${error}\n`;
                             progressLog.scrollTop = progressLog.scrollHeight;
                         });
                 }
 
-                // Check PPP daemon status and update button accordingly
-                function checkPppdStatus() {
+                // Check PPP status and update button accordingly
+                function checkPPPStatus() {
                     // First check the saved enabled state from settings
-                    fetch('/pppd/get-enabled-state', { method: 'GET' })
+                    fetch('/ppp/get-enabled-state', { method: 'GET' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
                                 if (data.enabled) {
-                                    // PPP daemon should be enabled, check if it's actually running
-                                    fetch('/pppd/status', { method: 'GET' })
+                                    // PPP should be enabled, check if it's actually running
+                                    fetch('/ppp/status', { method: 'GET' })
                                         .then(response => response.json())
                                         .then(statusData => {
                                             if (statusData.running) {
@@ -348,26 +348,26 @@
                                                 // failed to start, print error message and restore Run button
                                                 runBtn.textContent = "Run";
                                                 runBtn.className = "btn btn-success";
-                                                progressLog.value += "PPP daemon was enabled but failed to start automatically\n";
+                                                progressLog.value += "PPP was enabled but failed to start automatically\n";
                                                 progressLog.scrollTop = progressLog.scrollHeight;
                                             }
                                         })
                                         .catch(error => {
-                                            console.error('Error checking PPP daemon runtime status:', error);
+                                            console.error('Error checking PPP runtime status:', error);
                                         });
                                 } else {
-                                    // PPP daemon should be disabled
+                                    // PPP should be disabled
                                     runBtn.textContent = "Run";
                                     runBtn.className = "btn btn-success";
                                 }
                             } else {
-                                console.error('Failed to get PPP daemon enabled state:', data.message);
+                                console.error('Failed to get PPP enabled state:', data.message);
                             }
                         })
                         .catch(error => {
-                            console.error('Error checking PPP daemon enabled state:', error);
+                            console.error('Error checking PPP enabled state:', error);
                             // Fallback to just checking runtime status
-                            fetch('/pppd/status', { method: 'GET' })
+                            fetch('/ppp/status', { method: 'GET' })
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.running) {
@@ -379,26 +379,26 @@
                                     }
                                 })
                                 .catch(error => {
-                                    console.error('Error checking PPP daemon status:', error);
+                                    console.error('Error checking PPP status:', error);
                                 });
                         });
                 }
 
-                // Save PPP daemon enabled state to settings
-                function savePppdState(enabled) {
-                    fetch(`/pppd/save-enabled-state?enabled=${enabled}`, {
+                // Save PPP enabled state to settings
+                function savePPPState(enabled) {
+                    fetch(`/ppp/save-enabled-state?enabled=${enabled}`, {
                         method: 'POST'
                     })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                console.log(`PPP daemon state saved: ${enabled}`);
+                                console.log(`PPP state saved: ${enabled}`);
                             } else {
-                                console.error('Failed to save PPP daemon state:', data.message);
+                                console.error('Failed to save PPP state:', data.message);
                             }
                         })
                         .catch(error => {
-                            console.error('Error saving PPP daemon state:', error);
+                            console.error('Error saving PPP state:', error);
                         });
                 }
             });

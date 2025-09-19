@@ -1,10 +1,10 @@
 {
-    "name":"PPP Daemon",
-    "description":"BlueOS Extension to run a PPP daemon",
+    "name":"PPP",
+    "description":"BlueOS Extension to run PPP",
     "icon":"mdi-arrow",
     "company":"ArduPilot",
-    "version":"0.0.0",
+    "version":"0.0.1",
     "new_page": false,
-    "webpage": "https://github.com/srmainwaring/blueos-pppd",
+    "webpage": "https://github.com/srmainwaring/blueos-ppp",
     "api":""
 }
