@@ -1,7 +1,7 @@
 [project]
-name = "blueos-pppd-extension"
+name = "blueos-ppp-extension"
 version = "0.0.0"
-description = "BlueOS PPP Daemon Extension"
+description = "BlueOS PPP Extension"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License (GPLv3)",
