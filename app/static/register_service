@@ -1,7 +1,7 @@
 {
     "name":"PPP",
     "description":"BlueOS Extension to run PPP",
-    "icon":"mdi-arrow",
+    "icon":"mdi-lan-connect",
     "company":"ArduPilot",
     "version":"0.0.1",
     "new_page": false,

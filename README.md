@@ -18,22 +18,26 @@ Information for users
  
 ## Developer Information
 
-To manually install the extension in BlueOS
+To build the docker image and upload to Docker Hub:
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm/v7,linux/arm64/v8 . -t {your_dockerhub_id}/blueos-ppp:0.0.1 --output type=registry
+```
+
+To manually install the extension in BlueOS:
 
 - Open the BlueOS Extensions tab, select "Installed"
 - Push the "+" button on the bottom right
 - Under "Create Extension" complete these fields
-  - Extension Identifier: {your_dockerhub_user}.blueos-ppp
+  - Extension Identifier: {your_dockerhub_id}.blueos-ppp
   - Extension Name: PPP
-  - Docker image: {your_dockerhub_user}/blueos-ppp
+  - Docker image: {your_dockerhub_id}/blueos-ppp
   - Dockertag: 0.0.1
   - Settings: add the settings below in the editor
 
 ```json
 {
-  "ExposedPorts": {
-    "8000/tcp": {}
-  },
+  "NetworkMode": "host",
   "HostConfig": {
     "Privileged": true,
     "Binds": [
@@ -43,17 +47,8 @@ To manually install the extension in BlueOS
     ],
     "CpuQuota": 100000,
     "CpuPeriod": 100000,
-    "ExtraHosts": [
-      "host.docker.internal:host-gateway"
-    ],
     "NetworkMode": "host",
-    "PortBindings": {
-      "8000/tcp": [
-        {
-          "HostPort": ""
-        }
-      ]
-    }
+    "PortBindings": null
   }
 }
 ```
