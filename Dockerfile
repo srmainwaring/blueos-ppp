@@ -49,8 +49,12 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app /app
 
-# TODO: do not need entire build folder...
-COPY --from=builder /ppp_ws /ppp_ws
+# Build for pppd installs to the following locations
+COPY --from=builder /usr/local/etc /usr/local/etc
+COPY --from=builder /usr/local/include /usr/local/include
+COPY --from=builder /usr/local/lib /usr/local/lib
+COPY --from=builder /usr/local/sbin /usr/local/sbin
+COPY --from=builder /usr/local/share /usr/local/share
 
 EXPOSE 8000/tcp
 
