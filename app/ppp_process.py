@@ -7,8 +7,8 @@ from pathlib import Path
 
 logger = logging.getLogger("ppp.daemon")
 
-PPPD_EXECUTABLE = Path("/ppp_ws/ppp/pppd/pppd")
-# PPPD_EXECUTABLE = Path("/shortcuts/userdata/code/ppp_ws/ppp/pppd/pppd"),
+# pppd is installed to /usr/local/sbin
+PPPD_EXECUTABLE = Path("/usr/local/sbin/pppd")
 
 
 class PPPDaemon:
